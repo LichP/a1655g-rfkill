@@ -1,0 +1,94 @@
+a1655g-rfkill
+-------------
+
+This a Linux kernel module which provides an rfkill driver for the wifi
+antenna on Fujitsu Siemens Amilo A1655G laptop. It allows userspace programs
+to turn on/off the antenna through the kernel's rfkill interface. This
+module was made possible by the earlier fsaa1655g module by Martin Vacera,
+to whom I'm very grateful for giving my laptop the ability to talk to the
+world for the past 5 years :-)
+
+Note that this driver is only compatible with modern 2.6 kernels. If you're
+using a 2.4 kernel (anyone?) then you'll need the original fsaa1655g.
+
+Compiling and Installing
+------------------------
+
+In adition to the usual compilation tools (gcc, make) you'll need the
+headers for the kernel running on your system. This is usually provided by
+your distro, e.g. for Debian 64bit:
+
+$ sudo aptitude install linux-headers-2.6-amd64
+
+You should then be able to compile the module:
+
+$ make
+
+and install it:
+
+$ sudo make install
+
+Usage
+-----
+
+Once installed, you can load the module into your kernel in the usual way:
+
+sudo modprobe a1655g-rfkill
+
+If the module loaded successfully, you should see a couple of lines like this
+in dmesg:
+
+[ 6989.378502] a1655g-rfkill: Registering as a platform device
+[ 6989.383242] a1655g-rfkill: Turning WLAN radio ON
+
+The rfkill subsystem should default to switching on the antenna unless your
+system is configured otherwise. You can also explicitly turn the antenna on
+and off from the command line using the rfkill userspace tool:
+
+$ sudo aptitude install rfkill
+$ rfkill list
+0: phy0: Wireless LAN
+	Soft blocked: no
+	Hard blocked: no
+1: a1655g-rfkill: Wireless LAN
+	Soft blocked: no
+	Hard blocked: no
+$ rfkill block 1
+[Wlan LED should go off]
+$ rfkill list
+0: phy0: Wireless LAN
+	Soft blocked: no
+	Hard blocked: yes
+1: a1655g-rfkill: Wireless LAN
+	Soft blocked: yes
+	Hard blocked: no
+$ rfkill unblock 1
+[Wlan LED should come back on]
+$ rfkill list
+0: phy0: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+1: a1655g-rfkill: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+
+There are also GUI interfaces to rfkill (e.g.
+http://http://gitorious.org/gnome-rfkill-applet)
+
+fsaa1655g Already Exists - Why Do It Again?
+-------------------------------------------
+
+There are two motivations: the first is that fsaa1655g only allows
+manual/scripted control over the wifi radio switch; implementing an rfkill
+interface allows the kernel to automatically manage the switch in most
+circumstances, e.g. reenabing wlan when coming out of hibernate etc. The
+second motivation is more personal: I'm new to kernel development, and the
+simple nature of the task makes it a nice introduction to writing a complete
+functioning kernel module that does something useful :-)
+
+--
+Phil Stewart
+May 2011
+
+Email: phil.stewart@lichp.co.uk
+ 
